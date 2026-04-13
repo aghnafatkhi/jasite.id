@@ -1,14 +1,19 @@
 import React from "react";
-import { MessageSquare, ExternalLink, Tag } from "lucide-react";
+import { MessageSquare, ExternalLink, Tag, Image as ImageIcon } from "lucide-react";
 import { Project, useStore } from "../store";
 import { motion } from "motion/react";
+import { Link } from "react-router-dom";
 
 interface ProductCardProps {
   project: Project;
 }
 
 export const ProductCard: React.FC<ProductCardProps> = ({ project }) => {
-  const { language } = useStore();
+  const { language, testimonials } = useStore();
+  
+  // Find related portfolio items based on category
+  const relatedPortfolios = testimonials.filter(t => t.role === project.category);
+  const hasPortfolio = relatedPortfolios.length > 0;
   
   const t = {
     id: {
@@ -16,6 +21,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ project }) => {
       order: "Pesan",
       demo: "Demo",
       noDemo: "Tanpa Demo",
+      portfolio: "Lihat Portofolio",
       waMessage: `Halo jasite.id, saya tertarik untuk memesan website paket: *${project.title}* seharga `
     },
     en: {
@@ -23,6 +29,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ project }) => {
       order: "Order",
       demo: "Demo",
       noDemo: "No Demo",
+      portfolio: "View Portfolio",
       waMessage: `Hello jasite.id, I am interested in ordering the website package: *${project.title}* priced at `
     }
   }[language];
@@ -46,7 +53,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ project }) => {
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.3 } }}
-      whileHover={{ y: -12, transition: { duration: 0.4, ease: "easeOut" } }}
+      whileHover={{ y: -12, transition: { duration: 0.2, ease: "easeOut" } }}
       className="group relative flex flex-col h-full glass-card overflow-hidden"
     >
       {/* Image Container */}
@@ -54,10 +61,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({ project }) => {
         <img
           src={project.image}
           alt={project.title}
-          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
           referrerPolicy="no-referrer"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         
         {/* Category Badge */}
         <div className="absolute top-4 left-4">
@@ -85,6 +92,16 @@ export const ProductCard: React.FC<ProductCardProps> = ({ project }) => {
         <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed mb-6 line-clamp-2">
           {project.description}
         </p>
+
+        {/* Portfolio Link if exists */}
+        {hasPortfolio && (
+          <div className="mb-6">
+            <Link to="/testimoni" className="inline-flex items-center gap-2 text-xs font-bold text-primary hover:text-primary-hover transition-colors">
+              <ImageIcon className="w-4 h-4" />
+              {t.portfolio} ({relatedPortfolios.length})
+            </Link>
+          </div>
+        )}
 
         {/* Pricing */}
         <div className="mt-auto pt-6 border-t border-slate-100 dark:border-slate-800/50">
@@ -131,3 +148,4 @@ export const ProductCard: React.FC<ProductCardProps> = ({ project }) => {
     </motion.div>
   );
 };
+

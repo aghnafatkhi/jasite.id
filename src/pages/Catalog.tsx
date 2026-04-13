@@ -53,6 +53,7 @@ export function Catalog() {
   }[language];
 
   const filteredProjects = projects
+    .filter((p) => p.isActive !== false)
     .filter((p) => activeCategory === "Semua" || p.category === activeCategory)
     .filter((p) => 
       p.title.toLowerCase().includes(searchQuery.toLowerCase()) || 

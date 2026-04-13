@@ -13,7 +13,7 @@ const iconMap: Record<string, any> = {
 
 export function Home() {
   const { projects, testimonials, language, features } = useStore();
-  const featuredProjects = projects.slice(0, 3);
+  const featuredProjects = projects.filter(p => p.isActive !== false).slice(0, 3);
   const heroRef = useRef(null);
 
   const { scrollYProgress } = useScroll({
@@ -106,8 +106,8 @@ export function Home() {
     }
   }[language];
 
-  const y1 = useTransform(scrollYProgress, [0, 1], [0, 200]);
-  const scaleParallax = useTransform(scrollYProgress, [0, 1], [1, 1.03]); // Very slight scale up
+  const y1 = useTransform(scrollYProgress, [0, 1], [0, 30]); // Further reduced from 100 to 30
+  const scaleParallax = useTransform(scrollYProgress, [0, 1], [1, 1.01]); // Reduced scale
 
   return (
     <div>
@@ -122,14 +122,14 @@ export function Home() {
         
         <motion.div 
           style={{ y: y1 }}
-          className="container-custom relative z-10"
+          className="container-custom relative z-20" // Increased z-index to stay above background elements
         >
           <div className="text-center max-w-5xl mx-auto">
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5 }}
-              className="inline-flex items-center gap-2 px-4 py-2 mb-8 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-black uppercase tracking-[0.2em]"
+              className="inline-flex items-center gap-2 px-4 py-2 mb-8 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-black uppercase tracking-[0.2em] badge-glow"
             >
               <Zap className="w-4 h-4" />
               <motion.span key={"badge-" + language} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>{t.badge}</motion.span>
@@ -153,7 +153,7 @@ export function Home() {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.3 }}
-              className="flex flex-col sm:flex-row items-center justify-center gap-6"
+              className="flex flex-col sm:flex-row items-center justify-center gap-6 relative z-30" // Ensure buttons are clickable
             >
               <Link to="/katalog" className="w-full sm:w-auto btn-primary text-xl px-12 py-5">
                 <motion.span key={"btn-start-" + language} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>{t.start}</motion.span>
@@ -168,12 +168,12 @@ export function Home() {
         
         {/* Parallax Background Elements */}
         <motion.div 
-          style={{ y: useTransform(scrollYProgress, [0, 1], [0, -200]) }}
-          className="absolute top-40 right-[-5%] w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px] -z-10"
+          style={{ y: useTransform(scrollYProgress, [0, 1], [0, -40]) }} // Reduced from -100 to -40
+          className="absolute top-40 right-[-5%] w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px] -z-10 pointer-events-none" // Added pointer-events-none
         />
         <motion.div 
-          style={{ y: useTransform(scrollYProgress, [0, 1], [0, 200]) }}
-          className="absolute bottom-40 left-[-5%] w-[400px] h-[400px] bg-blue-500/5 rounded-full blur-[100px] -z-10"
+          style={{ y: useTransform(scrollYProgress, [0, 1], [0, 40]) }} // Reduced from 100 to 40
+          className="absolute bottom-40 left-[-5%] w-[400px] h-[400px] bg-blue-500/5 rounded-full blur-[100px] -z-10 pointer-events-none" // Added pointer-events-none
         />
       </section>
 

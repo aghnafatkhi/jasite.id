@@ -17,6 +17,7 @@ export interface Project {
   price: number;
   originalPrice?: number;
   demoLink?: string;
+  isActive?: boolean;
 }
 
 export interface Testimonial {
@@ -49,6 +50,9 @@ interface AppState {
   addFeature: (feature: Omit<Feature, 'id'>) => void;
   updateFeature: (id: string, feature: Partial<Feature>) => void;
   deleteFeature: (id: string) => void;
+  reorderProjects: (startIndex: number, endIndex: number) => void;
+  reorderTestimonials: (startIndex: number, endIndex: number) => void;
+  reorderFeatures: (startIndex: number, endIndex: number) => void;
 }
 
 const defaultCategories = ["Toko Online", "Company Profile", "Undangan Web", "Landing Page"];
@@ -71,7 +75,8 @@ const defaultProjects: Project[] = [
     description: "Website toko online sederhana dengan fitur keranjang belanja dan checkout WhatsApp.",
     price: 350000,
     originalPrice: 750000,
-    demoLink: "https://demo.jasite.id/toko-basic"
+    demoLink: "https://demo.jasite.id/toko-basic",
+    isActive: true
   },
   {
     id: "2",
@@ -81,7 +86,8 @@ const defaultProjects: Project[] = [
     description: "Tingkatkan kredibilitas bisnis Anda dengan website profil perusahaan yang profesional.",
     price: 500000,
     originalPrice: 1000000,
-    demoLink: "https://demo.jasite.id/company-pro"
+    demoLink: "https://demo.jasite.id/company-pro",
+    isActive: true
   },
   {
     id: "3",
@@ -91,7 +97,8 @@ const defaultProjects: Project[] = [
     description: "Undangan digital elegan dengan fitur RSVP, galeri foto, dan peta lokasi.",
     price: 150000,
     originalPrice: 300000,
-    demoLink: "https://demo.jasite.id/undangan-digital"
+    demoLink: "https://demo.jasite.id/undangan-digital",
+    isActive: true
   }
 ];
 
@@ -134,7 +141,7 @@ export const useStore = create<AppState>()(
       categories: defaultCategories,
       features: defaultFeatures,
       addProject: (project) => set((state) => ({
-        projects: [...state.projects, { ...project, id: Date.now().toString() }]
+        projects: [...state.projects, { ...project, id: Date.now().toString(), isActive: project.isActive ?? true }]
       })),
       updateProject: (id, updatedFields) => set((state) => ({
         projects: state.projects.map(p => p.id === id ? { ...p, ...updatedFields } : p)
@@ -165,7 +172,25 @@ export const useStore = create<AppState>()(
       })),
       deleteFeature: (id) => set((state) => ({
         features: state.features.filter(f => f.id !== id)
-      }))
+      })),
+      reorderProjects: (startIndex, endIndex) => set((state) => {
+        const result = Array.from(state.projects);
+        const [removed] = result.splice(startIndex, 1);
+        result.splice(endIndex, 0, removed);
+        return { projects: result };
+      }),
+      reorderTestimonials: (startIndex, endIndex) => set((state) => {
+        const result = Array.from(state.testimonials);
+        const [removed] = result.splice(startIndex, 1);
+        result.splice(endIndex, 0, removed);
+        return { testimonials: result };
+      }),
+      reorderFeatures: (startIndex, endIndex) => set((state) => {
+        const result = Array.from(state.features);
+        const [removed] = result.splice(startIndex, 1);
+        result.splice(endIndex, 0, removed);
+        return { features: result };
+      })
     }),
     {
       name: 'jasite-storage-v1',
