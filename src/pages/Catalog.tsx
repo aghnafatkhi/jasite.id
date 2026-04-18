@@ -54,7 +54,7 @@ export function Catalog() {
 
   const filteredProjects = projects
     .filter((p) => p.isActive !== false)
-    .filter((p) => activeCategory === "Semua" || p.category === activeCategory)
+    .filter((p) => activeCategory === "Semua" || (p.categories && p.categories.includes(activeCategory)))
     .filter((p) => 
       p.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
       p.description.toLowerCase().includes(searchQuery.toLowerCase())
@@ -128,20 +128,26 @@ export function Catalog() {
         </div>
 
         {/* Category Filter */}
-        <div className="flex flex-wrap items-center gap-3 mb-16">
-          {allCategories.map((category) => (
-            <button
-              key={category}
-              onClick={() => setActiveCategory(category)}
-              className={`px-6 py-3 rounded-xl text-sm font-black uppercase tracking-widest transition-all duration-300 ${
-                activeCategory === category
-                  ? "bg-primary text-black shadow-lg shadow-primary/20 scale-105"
-                  : "bg-slate-100 text-slate-500 hover:bg-slate-200 dark:bg-slate-900 dark:text-slate-400 dark:hover:bg-slate-800"
-              }`}
+        <div className="mb-16 max-w-xs">
+          <label className="block text-sm font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-3">
+            Kategori
+          </label>
+          <div className="relative">
+            <select
+              value={activeCategory}
+              onChange={(e) => setActiveCategory(e.target.value)}
+              className="w-full pl-5 pr-12 py-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl focus:ring-2 focus:ring-primary text-slate-900 dark:text-white font-bold appearance-none cursor-pointer"
             >
-              {(t.categories as any)[category] || category}
-            </button>
-          ))}
+              {allCategories.map((category) => (
+                <option key={category} value={category}>
+                  {(t.categories as any)[category] || category}
+                </option>
+              ))}
+            </select>
+            <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+            </div>
+          </div>
         </div>
 
         {/* Projects Grid */}

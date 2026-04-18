@@ -11,12 +11,18 @@ export interface Feature {
 export interface Project {
   id: string;
   title: string;
-  category: string;
+  categories: string[];
   image: string;
+  imageElite?: string;
   description: string;
+  featuresStandard?: string[];
+  featuresExclusive?: string[];
   price: number;
   originalPrice?: number;
+  priceElite?: number;
+  originalPriceElite?: number;
   demoLink?: string;
+  demoLinkElite?: string;
   isActive?: boolean;
 }
 
@@ -70,20 +76,27 @@ const defaultProjects: Project[] = [
   {
     id: "1",
     title: "Toko Online Basic",
-    category: "Toko Online",
+    categories: ["Toko Online"],
     image: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&q=80&w=800",
+    imageElite: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=800",
     description: "Website toko online sederhana dengan fitur keranjang belanja dan checkout WhatsApp.",
     price: 350000,
     originalPrice: 750000,
+    priceElite: 850000,
+    originalPriceElite: 1500000,
     demoLink: "https://demo.jasite.id/toko-basic",
+    demoLinkElite: "https://demo.jasite.id/toko-elite",
+    featuresStandard: ["Desain responsive", "Keranjang belanja", "Checkout WhatsApp"],
+    featuresExclusive: ["Desain Premium", "Sistem Pembayaran Otomatis", "Admin Panel Lanjutan", "Database Pelanggan"],
     isActive: true
   },
   {
     id: "2",
     title: "Company Profile Pro",
-    category: "Company Profile",
+    categories: ["Company Profile"],
     image: "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=800",
     description: "Tingkatkan kredibilitas bisnis Anda dengan website profil perusahaan yang profesional.",
+    featuresStandard: ["Desain responsive", "Gallery Foto", "Form Kontak"],
     price: 500000,
     originalPrice: 1000000,
     demoLink: "https://demo.jasite.id/company-pro",
@@ -92,9 +105,10 @@ const defaultProjects: Project[] = [
   {
     id: "3",
     title: "Undangan Pernikahan Digital",
-    category: "Undangan Web",
+    categories: ["Undangan Web"],
     image: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&q=80&w=800",
     description: "Undangan digital elegan dengan fitur RSVP, galeri foto, dan peta lokasi.",
+    featuresStandard: ["RSVP", "Galeri Foto", "Peta Lokasi"],
     price: 150000,
     originalPrice: 300000,
     demoLink: "https://demo.jasite.id/undangan-digital",

@@ -7,6 +7,8 @@ import { Testimonials } from "./pages/Testimonials";
 import { ScrollToTop } from "./components/ScrollToTop";
 import { useEffect } from "react";
 import { useStore } from "./store";
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export default function App() {
   const { theme } = useStore();
@@ -23,6 +25,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <ScrollToTop />
+      <ToastContainer position="bottom-right" theme={theme === 'dark' ? 'dark' : 'light'} aria-label="Notifikasi" />
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route index element={<Home />} />

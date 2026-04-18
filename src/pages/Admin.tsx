@@ -4,6 +4,7 @@ import { Plus, Pencil, Trash2, X, LayoutDashboard, Package, MessageSquareQuote, 
 import { motion, AnimatePresence } from "motion/react";
 import { ImageUpload } from "../components/ImageUpload";
 import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
+import { toast } from 'react-toastify';
 
 export function Admin() {
   const { 
@@ -23,12 +24,18 @@ export function Admin() {
 
   const [formData, setFormData] = useState<Omit<Project, "id">>({
     title: "",
-    category: categories[0] || "Semua",
+    categories: [],
     image: "",
+    imageElite: "",
     description: "",
     price: 0,
     originalPrice: 0,
+    priceElite: 0,
+    originalPriceElite: 0,
     demoLink: "",
+    demoLinkElite: "",
+    featuresStandard: [],
+    featuresExclusive: [],
     isActive: true,
   });
 
@@ -79,24 +86,36 @@ export function Admin() {
       setEditingId(project.id);
       setFormData({
         title: project.title,
-        category: project.category,
+        categories: project.categories || [],
         image: project.image,
+        imageElite: project.imageElite || "",
         description: project.description,
         price: project.price,
         originalPrice: project.originalPrice || 0,
+        priceElite: project.priceElite || 0,
+        originalPriceElite: project.originalPriceElite || 0,
         demoLink: project.demoLink || "",
+        demoLinkElite: project.demoLinkElite || "",
+        featuresStandard: project.featuresStandard || [],
+        featuresExclusive: project.featuresExclusive || [],
         isActive: project.isActive ?? true,
       });
     } else {
       setEditingId(null);
       setFormData({
         title: "",
-        category: categories[0] || "Semua",
+        categories: [],
         image: "",
+        imageElite: "",
         description: "",
         price: 0,
         originalPrice: 0,
+        priceElite: 0,
+        originalPriceElite: 0,
         demoLink: "",
+        demoLinkElite: "",
+        featuresStandard: [],
+        featuresExclusive: [],
         isActive: true,
       });
     }
@@ -127,25 +146,35 @@ export function Admin() {
     if (activeTab === 'features') {
       if (editingId) {
         updateFeature(editingId, featureFormData);
+        toast.success("Keunggulan berhasil diperbarui!");
       } else {
         addFeature(featureFormData);
+        toast.success("Keunggulan berhasil ditambahkan!");
       }
     } else if (activeTab === 'testimonials') {
       if (editingId) {
         updateTestimonial(editingId, testimonialFormData);
+        toast.success("Testimoni berhasil diperbarui!");
       } else {
         addTestimonial(testimonialFormData);
+        toast.success("Testimoni berhasil ditambahkan!");
       }
     } else {
       const dataToSave = {
         ...formData,
         originalPrice: formData.originalPrice ? Number(formData.originalPrice) : undefined,
+        priceElite: formData.priceElite ? Number(formData.priceElite) : undefined,
+        originalPriceElite: formData.originalPriceElite ? Number(formData.originalPriceElite) : undefined,
+        featuresStandard: Array.isArray(formData.featuresStandard) ? formData.featuresStandard : [],
+        featuresExclusive: Array.isArray(formData.featuresExclusive) ? formData.featuresExclusive : [],
       };
 
       if (editingId) {
         updateProject(editingId, dataToSave);
+        toast.success("Produk berhasil diperbarui!");
       } else {
         addProject(dataToSave);
+        toast.success("Produk berhasil ditambahkan!");
       }
     }
     setIsModalOpen(false);
@@ -156,6 +185,9 @@ export function Admin() {
     if (newCategory.trim() && !categories.includes(newCategory.trim())) {
       addCategory(newCategory.trim());
       setNewCategory("");
+      toast.success("Kategori berhasil ditambahkan!");
+    } else if (categories.includes(newCategory.trim())) {
+      toast.error("Kategori sudah ada!");
     }
   };
 
@@ -165,15 +197,19 @@ export function Admin() {
     switch (deleteConfirm.type) {
       case 'project':
         deleteProject(deleteConfirm.id);
+        toast.success("Produk berhasil dihapus!");
         break;
       case 'category':
         deleteCategory(deleteConfirm.id);
+        toast.success("Kategori berhasil dihapus!");
         break;
       case 'feature':
         deleteFeature(deleteConfirm.id);
+        toast.success("Keunggulan berhasil dihapus!");
         break;
       case 'testimonial':
         deleteTestimonial(deleteConfirm.id);
+        toast.success("Testimoni berhasil dihapus!");
         break;
     }
     setDeleteConfirm(null);
@@ -202,7 +238,7 @@ export function Admin() {
 
   const filteredProjects = projects.filter(p => {
     const matchesSearch = p.title.toLowerCase().includes(searchQuery.toLowerCase()) || p.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = filterCategory === "All" || p.category === filterCategory;
+    const matchesCategory = filterCategory === "All" || (p.categories && p.categories.includes(filterCategory));
     return matchesSearch && matchesCategory;
   });
 
@@ -388,16 +424,24 @@ export function Admin() {
                                     </div>
                                   </td>
                                   <td className="p-6">
-                                    <span className="inline-flex px-3 py-1 rounded-lg bg-gray-100 dark:bg-gray-800 text-[10px] font-black uppercase tracking-widest text-gray-600 dark:text-gray-400">
-                                      {project.category}
-                                    </span>
+                                    <div className="flex flex-wrap gap-1">
+                                      {project.categories?.map(cat => (
+                                        <span key={cat} className="inline-flex px-2 py-0.5 rounded-md bg-gray-100 dark:bg-gray-800 text-[9px] font-black uppercase tracking-widest text-gray-600 dark:text-gray-400">
+                                          {cat}
+                                        </span>
+                                      ))}
+                                    </div>
                                   </td>
                                   <td className="p-6 font-black text-gray-900 dark:text-white">
                                     {formatRupiah(project.price)}
                                   </td>
                                   <td className="p-6">
                                     <button 
-                                      onClick={() => updateProject(project.id, { isActive: !(project.isActive ?? true) })}
+                                      onClick={() => {
+                                        const newStatus = !(project.isActive ?? true);
+                                        updateProject(project.id, { isActive: newStatus });
+                                        toast.success(newStatus ? "Produk diaktifkan!" : "Produk diubah ke Draft!");
+                                      }}
                                       className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-colors ${
                                         (project.isActive ?? true) 
                                           ? 'bg-green-500/10 text-green-600 dark:text-green-400 hover:bg-green-500/20' 
@@ -667,6 +711,7 @@ export function Admin() {
                         <ImageUpload 
                           value={testimonialFormData.avatar} 
                           onChange={(base64) => setTestimonialFormData({ ...testimonialFormData, avatar: base64 })} 
+                          aspect={1}
                         />
                       </div>
 
@@ -675,6 +720,7 @@ export function Admin() {
                         <ImageUpload 
                           value={testimonialFormData.projectImage || ""} 
                           onChange={(base64) => setTestimonialFormData({ ...testimonialFormData, projectImage: base64 })} 
+                          aspect={16 / 9}
                         />
                       </div>
 
@@ -702,7 +748,7 @@ export function Admin() {
                     </>
                   ) : (
                     <>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="grid grid-cols-1 gap-6">
                         <div>
                           <label className="block text-xs font-black uppercase tracking-widest text-gray-500 mb-2">Nama Produk</label>
                           <input
@@ -714,36 +760,68 @@ export function Admin() {
                           />
                         </div>
                         <div>
-                          <label className="block text-xs font-black uppercase tracking-widest text-gray-500 mb-2">Kategori</label>
-                          <select
-                            value={formData.category}
-                            onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                            className="w-full px-5 py-4 bg-gray-50 dark:bg-gray-900 border-none rounded-2xl focus:ring-2 focus:ring-primary text-slate-900 dark:text-white font-bold"
-                          >
+                          <label className="block text-xs font-black uppercase tracking-widest text-gray-500 mb-2">Kategori (Pilih satu atau lebih)</label>
+                          <div className="grid grid-cols-2 gap-3 p-4 bg-gray-50 dark:bg-gray-900 rounded-2xl">
                             {categories.map(c => (
-                              <option key={c} value={c}>{c}</option>
+                              <label key={c} className="flex items-center gap-3 cursor-pointer group">
+                                <input
+                                  type="checkbox"
+                                  checked={formData.categories.includes(c)}
+                                  onChange={(e) => {
+                                    const newCats = e.target.checked 
+                                      ? [...formData.categories, c]
+                                      : formData.categories.filter(cat => cat !== c);
+                                    setFormData({ ...formData, categories: newCats });
+                                  }}
+                                  className="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary"
+                                />
+                                <span className="text-sm font-bold text-gray-700 dark:text-gray-300 group-hover:text-primary transition-colors">{c}</span>
+                              </label>
                             ))}
-                          </select>
+                          </div>
                         </div>
                       </div>
 
-                      <div>
-                        <label className="block text-xs font-black uppercase tracking-widest text-gray-500 mb-2">Gambar Produk</label>
-                        <ImageUpload 
-                          value={formData.image} 
-                          onChange={(base64) => setFormData({ ...formData, image: base64 })} 
-                        />
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                          <label className="block text-xs font-black uppercase tracking-widest text-gray-500 mb-2">Gambar Standard</label>
+                          <ImageUpload 
+                            value={formData.image} 
+                            onChange={(base64) => setFormData({ ...formData, image: base64 })} 
+                            aspect={16 / 9}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-black uppercase tracking-widest text-gray-500 mb-2">Gambar Exclusive (Opsional)</label>
+                          <ImageUpload 
+                            value={formData.imageElite || ""} 
+                            onChange={(base64) => setFormData({ ...formData, imageElite: base64 })} 
+                            aspect={16 / 9}
+                          />
+                        </div>
                       </div>
 
-                      <div>
-                        <label className="block text-xs font-black uppercase tracking-widest text-gray-500 mb-2">URL Demo (Live Preview)</label>
-                        <input
-                          type="url"
-                          value={formData.demoLink}
-                          onChange={(e) => setFormData({ ...formData, demoLink: e.target.value })}
-                          className="w-full px-5 py-4 bg-gray-50 dark:bg-gray-900 border-none rounded-2xl focus:ring-2 focus:ring-primary text-slate-900 dark:text-white font-bold"
-                          placeholder="https://demo.jasite.id/..."
-                        />
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                          <label className="block text-xs font-black uppercase tracking-widest text-gray-500 mb-2">URL Demo Standard</label>
+                          <input
+                            type="url"
+                            value={formData.demoLink}
+                            onChange={(e) => setFormData({ ...formData, demoLink: e.target.value })}
+                            className="w-full px-5 py-4 bg-gray-50 dark:bg-gray-900 border-none rounded-2xl focus:ring-2 focus:ring-primary text-slate-900 dark:text-white font-bold"
+                            placeholder="https://demo.jasite.id/..."
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-black uppercase tracking-widest text-gray-500 mb-2">URL Demo Exclusive</label>
+                          <input
+                            type="url"
+                            value={formData.demoLinkElite || ""}
+                            onChange={(e) => setFormData({ ...formData, demoLinkElite: e.target.value })}
+                            className="w-full px-5 py-4 bg-gray-50 dark:bg-gray-900 border-none rounded-2xl focus:ring-2 focus:ring-primary text-slate-900 dark:text-white font-bold"
+                            placeholder="https://demo.jasite.id/..."
+                          />
+                        </div>
                       </div>
 
                       <div>
@@ -759,7 +837,28 @@ export function Admin() {
 
                       <div className="grid grid-cols-2 gap-6">
                         <div>
-                          <label className="block text-xs font-black uppercase tracking-widest text-gray-500 mb-2">Harga Promo (Rp)</label>
+                          <label className="block text-xs font-black uppercase tracking-widest text-gray-500 mb-2">Fitur Standard (Poin per baris)</label>
+                          <textarea
+                            rows={4}
+                            value={formData.featuresStandard?.join('\n') || ""}
+                            onChange={(e) => setFormData({ ...formData, featuresStandard: e.target.value.split('\n') })}
+                            className="w-full px-5 py-4 bg-gray-50 dark:bg-gray-900 border-none rounded-2xl focus:ring-2 focus:ring-primary text-slate-900 dark:text-white font-bold"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-black uppercase tracking-widest text-gray-500 mb-2">Fitur Exclusive (Poin per baris)</label>
+                          <textarea
+                            rows={4}
+                            value={formData.featuresExclusive?.join('\n') || ""}
+                            onChange={(e) => setFormData({ ...formData, featuresExclusive: e.target.value.split('\n') })}
+                            className="w-full px-5 py-4 bg-gray-50 dark:bg-gray-900 border-none rounded-2xl focus:ring-2 focus:ring-primary text-slate-900 dark:text-white font-bold"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-6">
+                        <div>
+                          <label className="block text-xs font-black uppercase tracking-widest text-gray-500 mb-2">Harga Standard (Rp)</label>
                           <input
                             required
                             type="number"
@@ -770,12 +869,37 @@ export function Admin() {
                           />
                         </div>
                         <div>
-                          <label className="block text-xs font-black uppercase tracking-widest text-gray-500 mb-2">Harga Asli (Rp)</label>
+                          <label className="block text-xs font-black uppercase tracking-widest text-gray-500 mb-2">Harga Normal Standard (Rp)</label>
                           <input
                             type="number"
                             min="0"
                             value={formData.originalPrice || ""}
                             onChange={(e) => setFormData({ ...formData, originalPrice: Number(e.target.value) })}
+                            className="w-full px-5 py-4 bg-gray-50 dark:bg-gray-900 border-none rounded-2xl focus:ring-2 focus:ring-primary text-slate-900 dark:text-white font-bold"
+                            placeholder="Opsional"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-6">
+                        <div>
+                          <label className="block text-xs font-black uppercase tracking-widest text-gray-500 mb-2">Harga Exclusive (Rp)</label>
+                          <input
+                            type="number"
+                            min="0"
+                            value={formData.priceElite || ""}
+                            onChange={(e) => setFormData({ ...formData, priceElite: Number(e.target.value) })}
+                            className="w-full px-5 py-4 bg-gray-50 dark:bg-gray-900 border-none rounded-2xl focus:ring-2 focus:ring-primary text-slate-900 dark:text-white font-bold"
+                            placeholder="Opsional"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-black uppercase tracking-widest text-gray-500 mb-2">Harga Normal Exclusive (Rp)</label>
+                          <input
+                            type="number"
+                            min="0"
+                            value={formData.originalPriceElite || ""}
+                            onChange={(e) => setFormData({ ...formData, originalPriceElite: Number(e.target.value) })}
                             className="w-full px-5 py-4 bg-gray-50 dark:bg-gray-900 border-none rounded-2xl focus:ring-2 focus:ring-primary text-slate-900 dark:text-white font-bold"
                             placeholder="Opsional"
                           />
